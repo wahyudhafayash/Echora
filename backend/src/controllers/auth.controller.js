@@ -38,6 +38,7 @@ export const signup = async (req, res) => {
         fullName: newUser.fullName,
         email: newUser.email,
         profilePic: newUser.profilePic,
+        createdAt: newUser.createdAt,
       });
     } else {
       res.status(400).json({ message: "Invalid user data" });
@@ -54,18 +55,18 @@ export const login = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ message: "invalid credentials" });
+      return res.status(400).json({ message: "Invalid credentials" });
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
-      return res.status(400).json({ message: "invalid credentials" });
+      return res.status(400).json({ message: "Invalid credentials" });
     }
 
     generateToken(user._id, res);
 
     res.status(200).json({
-      _id: user.id,
+      _id: user._id,
       fullName: user.fullName,
       email: user.email,
       profilePic: user.profilePic,
@@ -96,16 +97,16 @@ export const updateProfile = async (req, res) => {
     }
 
     const uploadResponse = await cloudinary.uploader.upload(profilePic);
-    const updateUser = await User.findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
       userId,
       { profilePic: uploadResponse.secure_url },
       { new: true }
     );
 
-    res.status(200).json(updateUser);
+    res.status(200).json(updatedUser);
   } catch (error) {
-    console.log("Error in updateProfile controller", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    console.log("error in update profile:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
